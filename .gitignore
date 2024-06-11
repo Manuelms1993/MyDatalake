@@ -6,7 +6,10 @@ __pycache__/
 *.log
 docker/data/kafka/*offsets*/
 docker/logs/
-docker/zookeeper/version-2/
+docker/data/zookeeper/version-2/
+docker/data/hdfs/namenode/current/
+*.parquet
+*.ipynb
 
 # C extensions
 *.so
