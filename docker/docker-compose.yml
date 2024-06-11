@@ -13,7 +13,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
@@ -45,6 +45,7 @@ services:
     hostname: namenode
     volumes:
       - ./data/hdfs/namenode:/hadoop/dfs/name
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     environment:
       - CLUSTER_NAME=test
     env_file:
@@ -62,7 +63,7 @@ services:
     hostname: datanode
     volumes:
       - ./data/hdfs/datanode:/hadoop/dfs/data
-      #- ./data/hadoop/bank:/bank
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     env_file:
       - ./data/hadoop/hadoop-hive.env
     environment:
@@ -91,6 +92,7 @@ services:
       - hive-metastore
     volumes:
       - ./data/teste:/teste
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     deploy:
       resources:
         limits:
@@ -119,8 +121,8 @@ services:
     container_name: hive-metastore-postgresql
     hostname: hive_metastore_postgresql
     volumes:
-      #- ./data/postgresql:/var/lib/postgresql/data
       - pgdata:/var/lib/postgresql/data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     depends_on:
       - datanode
     deploy:
@@ -137,6 +139,7 @@ services:
     - "8888:8888"
     volumes:
       - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     depends_on:
       - "database"
     deploy:
@@ -173,6 +176,7 @@ services:
       - "2181:2181"
     volumes:
       - ./data/zookeeper:/opt/zookeeper-3.4.6/data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     deploy:
       resources:
         limits:
@@ -184,10 +188,10 @@ services:
     hostname: kafka
     ports:
       - "9092:9092"
-    #volumes:
-    #  - ./data/kafka:/kafka/kafka-logs-kafka
     depends_on:
       - zookeeper
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     environment:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -208,6 +212,7 @@ services:
       - 27017:27017
     volumes:
       - ./data/mongo:/data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     deploy:
       resources:
         limits:
@@ -250,6 +255,7 @@ services:
     hostname: metabase
     volumes:
       - ./data/metabase/data:/metabase-data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     environment:
       MB_DB_FILE: "/metabase-data/metabase.db"
     ports:
@@ -258,16 +264,17 @@ services:
       resources:
         limits:
           memory: 500m
-          
-    
+
   postgres:
     image: postgres:13
+    platform: linux/amd64
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -277,6 +284,7 @@ services:
 
   redis:
     image: redis:latest
+    platform: linux/arm64
     expose:
       - 6379
     healthcheck:
@@ -292,6 +300,7 @@ services:
     command: webserver
     ports:
       - "8080:8080"
+    platform: linux/amd64
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -307,6 +316,7 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    platform: linux/amd64
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -322,6 +332,7 @@ services:
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    platform: linux/amd64
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -345,6 +356,7 @@ services:
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
+    platform: linux/amd64
     healthcheck:
       test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
       interval: 30s
@@ -360,6 +372,7 @@ services:
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
+    platform: linux/amd64
     # yamllint disable rule:line-length
     command:
       - -c
@@ -420,11 +433,13 @@ services:
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
 
   airflow-cli:
     <<: *airflow-common
     profiles:
       - debug
+    platform: linux/amd64
     environment:
       <<: *airflow-common-env
       CONNECTION_CHECK_MAX_COUNT: "0"
@@ -440,6 +455,7 @@ services:
   flower:
     <<: *airflow-common
     command: celery flower
+    platform: linux/amd64
     profiles:
       - flower
     ports:
