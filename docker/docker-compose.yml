@@ -115,6 +115,49 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+#  kafkamanager:
+#      image: fjardim/kafkamanager
+#      container_name: kafkamanager
+#      platform: linux/x86_64
+#      hostname: kafkamanager
+#      environment:
+#        ZK_HOSTS: zookeeper:2181
+#      ports:
+#        - 9000:9001
+#      depends_on:
+#        - kafka
+#      deploy:
+#        resources:
+#          limits:
+#            memory: 200m
+
+  jobmanager:
+    image: coomia/flink:1.14
+    container_name: jobmanager
+    platform: linux/x86_64
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  taskmanager:
+    image: coomia/flink:1.14
+    container_name: taskmanager
+    platform: linux/x86_64
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - "jobmanager:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
 networks:
   default:
      name: net

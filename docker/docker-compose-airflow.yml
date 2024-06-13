@@ -266,6 +266,7 @@ services:
       resources:
         limits:
           memory: 200m
+
  
   metabase:
     image: fjardim/metabase
