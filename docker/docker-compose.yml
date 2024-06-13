@@ -92,6 +92,29 @@ services:
     ports:
       - "10000:10000"
 
+
+  zookeeper:
+    image: coomia/zookeeper:0.1
+    container_name: zookeeper
+    platform: linux/x86_64
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "arkuser:1:1, arkevent:1:1"
+      KAFKA_TRANSACTION_MAX_TIMEOUT_MS: "7200000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 networks:
   default:
      name: net
