@@ -1,0 +1,208 @@
+services:
+  namenode:
+    image: coomia/hadoop3.2-namenode:1.0
+    container_name: namenode
+    platform: linux/x86_64
+    ports:
+      - 9870:9870
+      - 9000:9000
+    environment:
+      - CLUSTER_NAME=coomia-hdp-cluster
+    env_file:
+      - ./hadoop.env
+
+  datanode:
+    image: coomia/hadoop3.2-datanode:1.0
+    container_name: datanode
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    ports:
+      - "9864"
+    env_file:
+      - ./hadoop.env
+  
+  resourcemanager:
+    image: coomia/hadoop3.2-resourcemanager:1.0
+    container_name: resourcemanager
+    platform: linux/x86_64
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    env_file:
+      - ./hadoop.env
+
+  nodemanager:
+    image: coomia/hadoop3.2-nodemanager:1.0
+    container_name: nodemanager
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+  
+  historyserver:
+    image: coomia/hadoop3.2-historyserver:1.0
+    container_name: historyserver
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+
+  hive-metastore:
+    image: coomia/hive3:1.0
+    container_name: hive-metastore
+    platform: linux/x86_64
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 hive-metastore-pg:5432"
+    ports:
+      - "9083:9083"
+
+  hive-metastore-pg:
+    image: coomia/hive-metastore-pg:1.0
+    container_name: hive-metastore-pg
+    platform: linux/x86_64
+
+  hive-server:
+    image: coomia/hive3:1.0
+    container_name: hive-server
+    platform: linux/x86_64
+    env_file:
+      - ./hadoop.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    ports:
+      - "10000:10000"
+
+
+  zookeeper:
+    image: coomia/zookeeper:0.1
+    container_name: zookeeper
+    platform: linux/x86_64
+    ports:
+      - 2181:2181
+  kafka:
+    image: wurstmeister/kafka:2.12-2.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 10.116.200.24
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "arkuser:1:1, arkevent:1:1"
+      KAFKA_TRANSACTION_MAX_TIMEOUT_MS: "7200000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+ 
+  jobmanager:
+    image: coomia/flink:1.14
+    container_name: jobmanager
+    platform: linux/x86_64
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  taskmanager:
+    image: coomia/flink:1.14
+    container_name: taskmanager
+    platform: linux/x86_64
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - "jobmanager:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  elasticsearch:
+    image: elasticsearch:7.9.1
+    container_name: elasticsearch
+    platform: linux/x86_64
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - action.destructive_requires_name=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  kibana:
+    image: kibana:7.9.1
+    container_name: kibana
+    platform: linux/x86_64
+    ports:
+      - "5601:5601"
+    environment:
+      I18N_LOCALE: zh-CN
+    restart: always
+    depends_on:
+      - elasticsearch
+
+  hue:
+    image: fjardim/hue
+    hostname: hue
+    container_name: hue
+    platform: linux/x86_64
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+
+  database:
+    image: fjardim/mysql
+    container_name: database
+    platform: linux/x86_64
+    hostname: database
+    ports:
+      - "33061:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
+    volumes:
+      - ./data/mysql/data:/var/lib/mysql
+      - ./data/init.sql:/data/application/init.sql
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: hue
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+
+networks:
+  default:
+     name: net

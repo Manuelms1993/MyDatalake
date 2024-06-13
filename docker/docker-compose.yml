@@ -1,250 +1,66 @@
 services:
-
-  postgres:
-    image: postgres:15.1
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
-      interval: 2s
-      retries: 2
-      start_period: 2s
-    restart: always
-
   namenode:
-    image: fjardim/namenode_sqoop
+    image: coomia/hadoop3.2-namenode:1.0
     container_name: namenode
-    hostname: namenode
-    volumes:
-      - ./data/hdfs/namenode:/hadoop/dfs/name
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    environment:
-      - CLUSTER_NAME=test
-    env_file:
-      - ./data/hadoop/hadoop-hive.env
+    platform: linux/x86_64
     ports:
-      - "50070:50070"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-  
-  datanode:
-    image: fjardim/datanode
-    container_name: datanode
-    hostname: datanode
-    volumes:
-      - ./data/hdfs/datanode:/hadoop/dfs/data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    env_file:
-      - ./data/hadoop/hadoop-hive.env
-    environment:
-      SERVICE_PRECONDITION: "namenode:50070"
-    depends_on:
-      - namenode
-    ports:
-      - "50075:50075"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-  
-  hive-server:
-    image: fjardim/hive
-    container_name: hive-server
-    hostname: hive_server
-    env_file:
-      - ./data/hadoop/hadoop-hive.env
-    environment:
-      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
-      SERVICE_PRECONDITION: "hive-metastore:9083"
-    ports:
-      - "10000:10000"
-    depends_on:
-      - hive-metastore
-    volumes:
-      - ./data/teste:/teste
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-  
-  hive-metastore:
-    image: fjardim/hive
-    container_name: hive_metastore
-    hostname: hive_metastore
-    env_file:
-      - ./data/hadoop/hadoop-hive.env
-    command: /opt/hive/bin/hive --service metastore
-    environment:
-      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 hive-metastore-postgresql:5432"
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    ports:
-      - "9083:9083"
-    depends_on:
-      - hive-metastore-postgresql
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-  
-  hive-metastore-postgresql:
-    image: fjardim/hive-metastore
-    container_name: hive-metastore-postgresql
-    hostname: hive_metastore_postgresql
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    depends_on:
-      - datanode
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-
-  hue:
-    image: fjardim/hue
-    hostname: hue
-    container_name: hue
-    dns: 8.8.8.8
-    ports:
-    - "8888:8888"
-    volumes:
-      - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    depends_on:
-      - "database"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-  
-  database:
-    image: fjardim/mysql
-    container_name: database
-    hostname: database
-    ports:
-        - "33061:3306"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
-    volumes:
-        - ./data/mysql/data:/var/lib/mysql
-        - ./data/init.sql:/data/application/init.sql
-    environment:
-        MYSQL_ROOT_USER: root
-        MYSQL_ROOT_PASSWORD: secret
-        MYSQL_DATABASE: hue
-        MYSQL_USER: root
-        MYSQL_PASSWORD: secret
-
-  zookeeper:
-    image: fjardim/zookeeper
-    container_name: zookeeper
-    hostname: zookeeper
-    ports:
-      - "2181:2181"
-    volumes:
-      - ./data/zookeeper:/opt/zookeeper-3.4.6/data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-
-  kafka:
-    image: fjardim/kafka
-    container_name: kafka
-    hostname: kafka
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-    
-  mongo:
-    image: fjardim/mongo
-    container_name: mongo
-    hostname: mongo
-    #restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-    ports:
-      - 27017:27017
-    volumes:
-      - ./data/mongo:/data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    deploy:
-      resources:
-        limits:
-          memory: 500m
- 
-  mongo-express:
-    image: fjardim/mongo-express
-    container_name: mongo_express
-    hostname: mongo_express
-    #restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: root
-      ME_CONFIG_MONGODB_SERVER: mongo
-    deploy:
-      resources:
-        limits:
-          memory: 200m
- 
-  kafkamanager:
-    image: fjardim/kafkamanager
-    container_name: kafkamanager
-    hostname: kafkamanager
-    environment: 
-      ZK_HOSTS: zookeeper:2181
-    ports:
+      - 9870:9870
       - 9000:9000
-    depends_on:
-      - kafka
-    deploy:
-      resources:
-        limits:
-          memory: 200m
- 
-  metabase:
-    image: fjardim/metabase
-    container_name: metabase
-    hostname: metabase
-    volumes:
-      - ./data/metabase/data:/metabase-data
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
     environment:
-      MB_DB_FILE: "/metabase-data/metabase.db"
-    ports:
-      - 3000:3000
-    deploy:
-      resources:
-        limits:
-          memory: 500m
+      - CLUSTER_NAME=coomia-hdp-cluster
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
 
-volumes:
-  pgdata:
-   driver: local
-  postgres-db-volume:
+  datanode:
+    image: coomia/hadoop3.2-datanode:1.0
+    container_name: datanode
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    ports:
+      - "9864"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+  
+  resourcemanager:
+    image: coomia/hadoop3.2-resourcemanager:1.0
+    container_name: resourcemanager
+    platform: linux/x86_64
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+
+  nodemanager:
+    image: coomia/hadoop3.2-nodemanager:1.0
+    container_name: nodemanager
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+  
+  historyserver:
+    image: coomia/hadoop3.2-historyserver:1.0
+    container_name: historyserver
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+
+networks:
+  default:
+     name: net
