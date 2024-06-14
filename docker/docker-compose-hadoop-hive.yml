@@ -1,0 +1,99 @@
+services:
+  namenode:
+    image: coomia/hadoop3.2-namenode:1.0
+    container_name: namenode
+    platform: linux/x86_64
+    ports:
+      - 9870:9870
+      - 9000:9000
+    environment:
+      - CLUSTER_NAME=coomia-hdp-cluster
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+
+  datanode:
+    image: coomia/hadoop3.2-datanode:1.0
+    container_name: datanode
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    ports:
+      - "9864"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+  
+  resourcemanager:
+    image: coomia/hadoop3.2-resourcemanager:1.0
+    container_name: resourcemanager
+    platform: linux/x86_64
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+
+  nodemanager:
+    image: coomia/hadoop3.2-nodemanager:1.0
+    container_name: nodemanager
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+  
+  historyserver:
+    image: coomia/hadoop3.2-historyserver:1.0
+    container_name: historyserver
+    platform: linux/x86_64
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+
+  hive-metastore:
+    image: coomia/hive3:1.0
+    container_name: hive-metastore
+    platform: linux/x86_64
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 hive-metastore-pg:5432"
+    ports:
+      - "9083:9083"
+
+  hive-metastore-pg:
+    image: coomia/hive-metastore-pg:1.0
+    container_name: hive-metastore-pg
+    platform: linux/x86_64
+
+  hive-server:
+    image: coomia/hive3:1.0
+    container_name: hive-server
+    platform: linux/x86_64
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    env_file:
+      - ./hadoop.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    ports:
+      - "10000:10000"
+
+networks:
+  default:
+     name: net

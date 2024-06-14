@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+standalone_admin_password.txt
+webserver_config.py
+airflow.cfg
+airflow.db
+*.cfg
+*/logs/*
 *.log
 docker/data/kafka/*offsets*/
 docker/logs/
