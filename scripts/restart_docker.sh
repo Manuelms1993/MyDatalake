@@ -7,10 +7,10 @@ docker-compose down -v
 docker volume rm $(docker volume ls -q)
 
 # docker with hadoop-hive
-docker-compose -f docker-compose-hadoop-hive.yml up -d
+#docker-compose -f docker-compose-hadoop-hive.yml up -d
 
 # docker with hadoop-hive and flink and kafka
-#docker-compose -f docker-compose-hadoop-hive-streaming.yml up -d
+docker-compose -f docker-compose-hadoop-hive-streaming.yml up -d
 
 
 # aditional comands
