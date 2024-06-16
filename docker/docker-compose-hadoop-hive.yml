@@ -73,37 +73,13 @@ services:
     networks:
       - hadoop
 
-  hive-metastore:
-    image: coomia/hive3:1.0
-    container_name: hive-metastore
-    platform: linux/x86_64
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
-    env_file:
-      - ./hadoop.env
-    command: /opt/hive/bin/hive --service metastore
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866 hive-metastore-pg:5432"
-    ports:
-      - "9083:9083"
-    networks:
-      - hadoop
-
-  hive-metastore-pg:
-    image: coomia/hive-metastore-pg:1.0
-    container_name: hive-metastore-pg
-    platform: linux/x86_64
-    networks:
-      - hadoop
-
   hive-server:
-    image: coomia/hive3:1.0
+    hostname: hive-server
     container_name: hive-server
+    image: bde2020/hive:2.3.2-postgresql-metastore
     platform: linux/x86_64
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
     env_file:
-      - ./hadoop.env
+      - ./hadoop-hive.env
     environment:
       HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
       SERVICE_PRECONDITION: "hive-metastore:9083"
@@ -111,47 +87,23 @@ services:
       - "10000:10000"
     networks:
       - hadoop
-
-  hue:
-    image: fjardim/hue
-    hostname: hue
+  hive-metastore:
+    hostname: hive-metastore
+    container_name: hive-metastore
     platform: linux/x86_64
-    container_name: hue
-    dns: 8.8.8.8
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    env_file:
+      - ./hadoop-hive.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866 hive-metastore-postgresql:5432"
     ports:
-      - "8888:8888"
-    volumes:
-      - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
-    depends_on:
-      - "database"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
+      - "9083:9083"
     networks:
       - hadoop
-
-  database:
-    image: fjardim/mysql
-    container_name: database
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
     platform: linux/x86_64
-    hostname: database
-    ports:
-      - "33061:3306"
-    deploy:
-      resources:
-        limits:
-          memory: 500m
-    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
-    volumes:
-      - ./data/mysql/data:/var/lib/mysql
-      - ./data/init.sql:/data/application/init.sql
-    environment:
-      MYSQL_ROOT_USER: root
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: hue
-      MYSQL_USER: root
-      MYSQL_PASSWORD: secret
     networks:
       - hadoop
 

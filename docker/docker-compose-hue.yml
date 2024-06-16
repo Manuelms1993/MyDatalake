@@ -1,0 +1,45 @@
+services:
+  hue:
+    image: fjardim/hue
+    hostname: hue
+    platform: linux/x86_64
+    container_name: hue
+    dns: 8.8.8.8
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
+      - ./data/hue/hue.ini:/usr/share/hue/desktop/conf/hue.ini
+    depends_on:
+      - "database"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    networks:
+      - hadoop
+
+  database:
+    image: mysql:5.7
+    container_name: database
+    platform: linux/x86_64
+    hostname: database
+    ports:
+      - "33061:3306"
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./init.sql:/data/application/init.sql
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: hue
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+    networks:
+      - hadoop
+
+networks:
+  default:
+    name: net
+  hadoop:
+    driver: bridge

@@ -12,14 +12,14 @@ default_args = {
     'retries': 1,
 }
 
-dag = DAG('0_create_hive_schema_and_tables', default_args=default_args, schedule_interval=None)
+dag = DAG('1_batch_hive_ingestion', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "sh /Users/manuelmontero/MM_DLK/MyDatalake/scripts/create_databases_and_tables.sh "
+command = "python /Users/manuelmontero/MM_DLK/mydlk-ingestion/main_batch.py "
 
 # Define the BashOperator
 hive_task = BashOperator(
-    task_id='create_hive_schema_and_tables',
+    task_id='1_batch_hive_ingestion',
     bash_command=command,
     dag=dag,
 )
