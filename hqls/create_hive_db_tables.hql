@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS raw;
 CREATE DATABASE IF NOT EXISTS stream;
 CREATE DATABASE IF NOT EXISTS bi;
 
-CREATE TABLE person_table (
+CREATE TABLE raw.actors (
     person_id STRING,
     name STRING,
     character STRING,
@@ -10,7 +10,7 @@ CREATE TABLE person_table (
 )
 STORED AS PARQUET;
 
-CREATE TABLE media_table (
+CREATE TABLE raw.films (
     id STRING,
     title STRING,
     type STRING,
@@ -23,7 +23,7 @@ CREATE TABLE media_table (
 )
 STORED AS PARQUET;
 
-CREATE TABLE media_ratings (
+CREATE TABLE raw.imdb (
     id INT,
     title STRING,
     imdb_score FLOAT,

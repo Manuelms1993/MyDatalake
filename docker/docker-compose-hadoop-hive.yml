@@ -1,30 +1,36 @@
 services:
   namenode:
-    image: coomia/hadoop3.2-namenode:1.0
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
     platform: linux/x86_64
+    restart: always
     ports:
       - 9870:9870
       - 9000:9000
     environment:
-      - CLUSTER_NAME=coomia-hdp-cluster
+      - CLUSTER_NAME=test
     env_file:
       - ./hadoop.env
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    networks:
+      - hadoop
 
   datanode:
-    image: coomia/hadoop3.2-datanode:1.0
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
+    hostname: datanode
     platform: linux/x86_64
+    restart: always
+    ports:
+      - 9866:9866
+      - 9864:9864
+    depends_on:
+      - namenode
     environment:
       SERVICE_PRECONDITION: "namenode:9870"
-    ports:
-      - "9864"
     env_file:
       - ./hadoop.env
-    volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    networks:
+      - hadoop
   
   resourcemanager:
     image: coomia/hadoop3.2-resourcemanager:1.0
@@ -33,33 +39,39 @@ services:
     ports:
       - 8088:8088
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866"
     env_file:
       - ./hadoop.env
     volumes:
       - /Users/manuelmontero/MM_DLK:/MM_DLK
+    networks:
+      - hadoop
 
   nodemanager:
     image: coomia/hadoop3.2-nodemanager:1.0
     container_name: nodemanager
     platform: linux/x86_64
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866"
     env_file:
       - ./hadoop.env
     volumes:
       - /Users/manuelmontero/MM_DLK:/MM_DLK
+    networks:
+      - hadoop
   
   historyserver:
     image: coomia/hadoop3.2-historyserver:1.0
     container_name: historyserver
     platform: linux/x86_64
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866"
     env_file:
       - ./hadoop.env
     volumes:
       - /Users/manuelmontero/MM_DLK:/MM_DLK
+    networks:
+      - hadoop
 
   hive-metastore:
     image: coomia/hive3:1.0
@@ -71,14 +83,18 @@ services:
       - ./hadoop.env
     command: /opt/hive/bin/hive --service metastore
     environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 hive-metastore-pg:5432"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 datanode:9866 hive-metastore-pg:5432"
     ports:
       - "9083:9083"
+    networks:
+      - hadoop
 
   hive-metastore-pg:
     image: coomia/hive-metastore-pg:1.0
     container_name: hive-metastore-pg
     platform: linux/x86_64
+    networks:
+      - hadoop
 
   hive-server:
     image: coomia/hive3:1.0
@@ -93,7 +109,54 @@ services:
       SERVICE_PRECONDITION: "hive-metastore:9083"
     ports:
       - "10000:10000"
+    networks:
+      - hadoop
+
+  hue:
+    image: fjardim/hue
+    hostname: hue
+    platform: linux/x86_64
+    container_name: hue
+    dns: 8.8.8.8
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data/hue/hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
+    depends_on:
+      - "database"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    networks:
+      - hadoop
+
+  database:
+    image: fjardim/mysql
+    container_name: database
+    platform: linux/x86_64
+    hostname: database
+    ports:
+      - "33061:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
+    volumes:
+      - ./data/mysql/data:/var/lib/mysql
+      - ./data/init.sql:/data/application/init.sql
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: hue
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+    networks:
+      - hadoop
 
 networks:
   default:
-     name: net
+    name: net
+  hadoop:
+    driver: bridge
