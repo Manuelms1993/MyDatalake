@@ -26,7 +26,7 @@ create_topic = BashOperator(
 )
 
 # Define the BashOperator
-command3 = "python /Users/manuelmontero/MM_DLK/mydlk-ingestion/main_stream.py "
+command3 = "python /Users/manuelmontero/MM_DLK/mydlk-ingestion/main_stream.py &> /dev/null & "
 consumer = BashOperator(
     task_id='execute_consumer_to_hive',
     bash_command=command3,
