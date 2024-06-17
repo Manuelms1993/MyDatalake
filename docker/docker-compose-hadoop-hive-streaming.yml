@@ -134,22 +134,6 @@ services:
     networks:
       - hadoop
 
-#  kafkamanager:
-#      image: fjardim/kafkamanager
-#      container_name: kafkamanager
-#      platform: linux/x86_64
-#      hostname: kafkamanager
-#      environment:
-#        ZK_HOSTS: zookeeper:2181
-#      ports:
-#        - 9000:9001
-#      depends_on:
-#        - kafka
-#      deploy:
-#        resources:
-#          limits:
-#            memory: 200m
-
   jobmanager:
     image: coomia/flink:1.14
     container_name: jobmanager
@@ -159,6 +143,8 @@ services:
     ports:
       - "8081:8081"
     command: jobmanager
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
     networks:
@@ -174,6 +160,8 @@ services:
     depends_on:
       - jobmanager
     command: taskmanager
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     links:
       - "jobmanager:jobmanager"
     environment:
