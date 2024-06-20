@@ -7,7 +7,7 @@ Welcome to my personal data lake to practice and integrate cutting-edge technolo
 
 - [@ManuelMontero](https://www.linkedin.com/in/manuel-montero/)
 
-## On-premises architecture
+## On-premise architecture
 
 ![Architecture Diagram](img/arquitecture-on-premise.png)
 
