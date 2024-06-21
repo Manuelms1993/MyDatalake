@@ -1,0 +1,48 @@
+services:
+
+  broadsea-atlasdb:
+    profiles: [ "atlasdb" ]
+    platform: linux/x86_64
+    build: .
+    image: ohdsi/broadsea-atlasdb:2.0.0
+    container_name: broadsea-atlasdb
+    cpus: 2
+    mem_limit: "2G"
+    environment:
+      - POSTGRES_PASSWORD=mypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlasdb-postgres-data:/var/lib/postgresql/data
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hadoop
+
+  dbt:
+    container_name: dbt
+    platform: linux/x86_64
+    profiles: [ "default" ]
+    build:
+      context: .
+      dockerfile: Dockerfiledbt
+    image: ohdsi/broadsea-dbt:1.0.0
+    volumes:
+      - /Users/manuelmontero/MM_DLK/mydlk-dbt:/usr/app
+      - /Users/manuelmontero/MM_DLK/mydlk-dbt/.dbt/:/root/.dbt/
+    networks:
+      - hadoop
+
+networks:
+  default:
+    name: net
+  hadoop:
+    driver: bridge
+
+volumes:
+  atlasdb-postgres-data:
+    name: atlasdb-postgres-data

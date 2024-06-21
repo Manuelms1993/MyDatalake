@@ -101,9 +101,45 @@ services:
       - "9083:9083"
     networks:
       - hadoop
+
   hive-metastore-postgresql:
     image: bde2020/hive-metastore-postgresql:2.3.0
     platform: linux/x86_64
+    networks:
+      - hadoop
+
+  broadsea-atlasdb:
+    profiles: [ "atlasdb" ]
+    platform: linux/x86_64
+    build: .
+    image: ohdsi/broadsea-atlasdb:2.0.0
+    container_name: broadsea-atlasdb
+    cpus: 2
+    mem_limit: "2G"
+    environment:
+      - POSTGRES_PASSWORD=mypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlasdb-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dbt_network
+
+  dbt:
+    container_name: dbt
+    platform: linux/x86_64
+    profiles: [ "default" ]
+    build:
+      context: .
+      dockerfile: Dockerfiledbt
+    image: ohdsi/broadsea-dbt:1.0.0
+    volumes:
+      - /Users/manuelmontero/MM_DLK:/MM_DLK
     networks:
       - hadoop
 
