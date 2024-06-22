@@ -7,4 +7,4 @@ docker-compose down -v
 docker volume rm $(docker volume ls -q)
 
 # docker with hadoop-hive
-docker-compose -f docker-compose-hadoop-hive.yml up -d
+docker-compose -f docker-compose-hadoop-hive.yml --profile atlasdb up -d
