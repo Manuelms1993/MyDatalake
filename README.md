@@ -9,7 +9,7 @@ Welcome to my personal data lake to practice and integrate cutting-edge technolo
 
 ## On-premise architecture
 
-![Architecture Diagram](img/arquitecture-on-premise.png)
+![Architecture Diagram](img/arquitecture-on-premise_v1.png)
 
 ### Repositories
 
