@@ -108,22 +108,6 @@ services:
     networks:
       - hadoop
 
-  dbt:
-    container_name: dbt
-    platform: linux/x86_64
-    profiles: [ "default" ]
-    image: manuelms1993/mm-dbt:latest
-    volumes:
-      - /Users/manuelmontero/MM_DLK/mydlk-dbt/:/usr/app/
-      - /Users/manuelmontero/MM_DLK/mydlk-dbt/.dbt:/root/.dbt
-    networks:
-      - hadoop
-
-volumes:
-  atlasdb-postgres-data:
-    name: atlasdb-postgres-data
-
-
 networks:
   default:
     name: net
