@@ -8,3 +8,5 @@ docker volume rm $(docker volume ls -q)
 
 # docker with hadoop-hive and flink and kafka
 docker-compose -f docker-compose-hadoop-hive-streaming.yml up -d
+
+sh /Users/manuelmontero/MM_DLK/MyDatalake/scripts/docker/launch_docker_kibana.sh

@@ -15,7 +15,7 @@ Welcome to my personal data lake to practice and integrate cutting-edge technolo
 
 1. MyDataLake: https://github.com/Manuelms1993/MyDatalake
 2. MyDockers: https://hub.docker.com/u/manuelms1993   
-3. Ingest: https://github.com/Manuelms1993/mydlk-ingestion
+3. Data ingestion: https://github.com/Manuelms1993/mydlk-ingestion
 4. Compute 
     * dbt: https://github.com/Manuelms1993/mydlk-dbt
 5. Dashboards: https://github.com/Manuelms1993/mydlk-dashboard
