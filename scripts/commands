@@ -1,0 +1,9 @@
+# airflow
+airflow standalone
+arch -arm64 pip3 install fastapi
+
+# env python
+source /Users/manuelmontero/MM_DLK/MyDatalake/venv/bin/activate
+
+# kill all stopped jobs
+kill $(jobs -p)
