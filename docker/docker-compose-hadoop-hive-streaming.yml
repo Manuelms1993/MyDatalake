@@ -44,7 +44,7 @@ services:
     env_file:
       - ./hadoop.env
     volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+      - /home/manuel-montero/MM_DLK:/MM_DLK
     networks:
       - hadoop
 
@@ -57,7 +57,7 @@ services:
     env_file:
       - ./hadoop.env
     volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+      - /home/manuel-montero/MM_DLK:/MM_DLK
     networks:
       - hadoop
 
@@ -70,7 +70,7 @@ services:
     env_file:
       - ./hadoop.env
     volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+      - /home/manuel-montero/MM_DLK:/MM_DLK
     networks:
       - hadoop
 
@@ -161,7 +161,7 @@ services:
       - jobmanager
     command: taskmanager
     volumes:
-      - /Users/manuelmontero/MM_DLK:/MM_DLK
+      - /home/manuel-montero/MM_DLK:/MM_DLK
     links:
       - "jobmanager:jobmanager"
     environment:
