@@ -19,6 +19,7 @@ Welcome to my personal data lake to practice and integrate cutting-edge technolo
 4. Compute 
     * dbt: https://github.com/Manuelms1993/mydlk-dbt
 5. Dashboards: https://github.com/Manuelms1993/mydlk-dashboard
+6. APIs: https://github.com/Manuelms1993/mydlk-micro 
 
 ### Database Structure
 This section describes the database structure implemented in the data lake, which consists of various main databases adapted to the different stages of data processing and analysis.
@@ -28,6 +29,11 @@ This section describes the database structure implemented in the data lake, whic
 
 ### Compute (raw data to BI database)
 The compute process involves a few stages of data transformation and processing to ensure that raw data is refined, aggregated, and prepared for business intelligence and analytics purposes.
+
+### Orchestration
+
+##### Airflow
+![DAGS](img/airflow.png)
 
 ### Dashboards
 This section presents various dashboards and data analysis projects created with different visualisation and analysis tools. These dashboards provide information on various pre-processed datasets.
