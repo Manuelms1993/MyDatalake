@@ -14,8 +14,8 @@ default_args = {
 
 dag = DAG('0_launch_micro', default_args=default_args, schedule_interval=None)
 
-# Define the command to execute using docker exec
-command = "uvicorn /home/manuel-montero/MM_DLK/mydlk-micro/micro:app --reload --port 8054 "
+# Define the command
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/micro/launch_micro.sh &> /dev/null & "
 
 # Define the BashOperator
 task = BashOperator(

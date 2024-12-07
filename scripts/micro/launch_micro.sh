@@ -1,4 +1,3 @@
 #!/bin/bash
 
-#http://127.0.0.1:8054/
-uvicorn micro:app --reload --port 8054
+cd /home/manuel-montero/MM_DLK/mydlk-micro/ && nohup uvicorn micro:app --reload --port 8054 &> /dev/null &

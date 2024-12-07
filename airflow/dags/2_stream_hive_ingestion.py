@@ -13,7 +13,7 @@ default_args = {
     'execution_timeout': timedelta(seconds=30),
 }
 
-dag = DAG('1_stream_hive_ingestion', default_args=default_args, schedule_interval=None)
+dag = DAG('2_stream_hive_ingestion', default_args=default_args, schedule_interval=None)
 
 # Define the BashOperator &> /dev/null &
 command3 = "python /Users/manuelmontero/MM_DLK/mydlk-ingestion/main_stream.py "

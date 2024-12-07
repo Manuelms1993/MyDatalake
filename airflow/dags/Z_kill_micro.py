@@ -12,17 +12,17 @@ default_args = {
     'retries': 1,
 }
 
-dag = DAG('1_batch_hive_ingestion', default_args=default_args, schedule_interval=None)
+dag = DAG('Z_kill_micro', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "python3 /home/manuel-montero/MM_DLK/mydlk-ingestion/main_batch_file2hive.py "
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/micro/kill_micro.sh &> /dev/null & "
 
 # Define the BashOperator
-hive_task = BashOperator(
-    task_id='1_batch_hive_ingestion',
+task = BashOperator(
+    task_id='Z_kill_micro',
     bash_command=command,
     dag=dag,
 )
 
 # Define the task dependencies
-hive_task
+task

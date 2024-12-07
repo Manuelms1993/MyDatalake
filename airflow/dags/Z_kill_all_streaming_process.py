@@ -10,19 +10,17 @@ default_args = {
     'email_on_retry': False,
     'retry_delay': timedelta(seconds=5),
     'retries': 1,
+    'execution_timeout': timedelta(seconds=30),
 }
 
-dag = DAG('1_batch_hive_ingestion', default_args=default_args, schedule_interval=None)
-
-# Define the command to execute using docker exec
-command = "python3 /home/manuel-montero/MM_DLK/mydlk-ingestion/main_batch_file2hive.py "
+dag = DAG('Z_kill_all_streaming_process', default_args=default_args, schedule_interval=None)
 
 # Define the BashOperator
-hive_task = BashOperator(
-    task_id='1_batch_hive_ingestion',
+command = "ps aux | grep /MM_DLK/mydlk-ingestion | grep -v grep | awk '{print $2}' | xargs -r kill -9 "
+exe = BashOperator(
+    task_id='Z_kill_all_streaming_process',
     bash_command=command,
     dag=dag,
 )
 
-# Define the task dependencies
-hive_task
+exe

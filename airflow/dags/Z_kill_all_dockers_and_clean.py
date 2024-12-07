@@ -12,17 +12,17 @@ default_args = {
     'retries': 1,
 }
 
-dag = DAG('1_batch_hive_ingestion', default_args=default_args, schedule_interval=None)
+dag = DAG('Z_kill_all_dockers_and_clean.py', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "python3 /home/manuel-montero/MM_DLK/mydlk-ingestion/main_batch_file2hive.py "
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/docker/stop_and_remove_dockers.sh &> /dev/null & "
 
 # Define the BashOperator
-hive_task = BashOperator(
-    task_id='1_batch_hive_ingestion',
+task = BashOperator(
+    task_id='Z_kill_all_dockers_and_clean.py',
     bash_command=command,
     dag=dag,
 )
 
 # Define the task dependencies
-hive_task
+task

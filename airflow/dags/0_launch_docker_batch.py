@@ -10,17 +10,19 @@ default_args = {
     'email_on_retry': False,
     'retry_delay': timedelta(seconds=5),
     'retries': 1,
-    'execution_timeout': timedelta(seconds=30),
 }
 
-dag = DAG('0_kill_all_streaming_process', default_args=default_args, schedule_interval=None)
+dag = DAG('0_launch_docker_batch', default_args=default_args, schedule_interval=None)
+
+# Define the command
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/docker/launch_docker_batch.sh && sleep 20 "
 
 # Define the BashOperator
-command = "ps aux | grep /MM_DLK/mydlk-ingestion | grep -v grep | awk '{print $2}' | xargs -r kill -9 "
-exe = BashOperator(
-    task_id='0_kill_all_streaming_process',
+task = BashOperator(
+    task_id='0_launch_docker_batch',
     bash_command=command,
     dag=dag,
 )
 
-exe
+# Define the task dependencies
+task

@@ -15,7 +15,7 @@ default_args = {
 dag = DAG('1_batch_mongo_ingestion', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "python /Users/manuelmontero/MM_DLK/mydlk-ingestion/main_batch_file2mongodb.py "
+command = "python3 /home/manuel-montero/MM_DLK/mydlk-ingestion/main_batch_file2mongodb.py "
 
 # Define the BashOperator
 hive_task = BashOperator(
