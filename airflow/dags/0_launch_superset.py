@@ -15,7 +15,7 @@ default_args = {
 dag = DAG('0_launch_superset', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "sh /Users/manuelmontero/MM_DLK/MyDatalake/scripts/docker/launch_docker_superset.sh "
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/docker/launch_docker_superset.sh "
 
 # Define the BashOperator
 task = BashOperator(

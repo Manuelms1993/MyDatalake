@@ -35,6 +35,18 @@ The compute process involves a few stages of data transformation and processing 
 ##### Airflow
 ![DAGS](img/airflow.png)
 
+### API REST examples
+OpenAPI Specification (OAS 3.0) : https://github.com/Manuelms1993/mydlk-micro/blob/master/oas3.yml
+
+| **HTTP Method** | **Endpoint**                      | **Description**                                                                | **Request Parameters**                                 | **Request Type** |
+|-----------------|-----------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------|------------------|
+| **GET**         | `/get-imdb-film/`                 | Retrieve a film's details by its unique `id`                                   | `id` (integer, required)                              | GET              |
+| **GET**         | `/get-imdb-film-by-name/`         | Retrieve a film's details by its name                                          | `name` (string, required)                              | GET              |
+| **POST**        | `/create-film/`                   | Create a new film entry in the database                                         | JSON object with film details                          | POST             |
+| **PUT**         | `/insert-if-not-exist-film/`      | Insert a new film entry if it doesn't already exist (based on `id`)            | JSON object with film details                          | PUT              |
+| **PATCH**       | `/update-film/{film_id}`          | Partially update a film entry by `film_id`                                      | `film_id` (string, required) and JSON object with fields to update | PATCH            |
+| **DELETE**      | `/delete-film/{film_id}`          | Delete a film entry by `film_id`                                               | `film_id` (string, required)                            | DELETE           |
+
 ### Dashboards
 This section presents various dashboards and data analysis projects created with different visualisation and analysis tools. These dashboards provide information on various pre-processed datasets.
 

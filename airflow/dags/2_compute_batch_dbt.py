@@ -15,7 +15,7 @@ default_args = {
 dag = DAG('2_compute_batch_dbt', default_args=default_args, schedule_interval=None)
 
 # Define the command to execute using docker exec
-command = "sh /Users/manuelmontero/MM_DLK/mydlk-dbt/scripts_comands_docker/dbt_run.sh "
+command = "sh /home/manuel-montero/MM_DLK/mydlk-dbt/scripts_comands_docker/dbt_run.sh "
 
 # Define the BashOperator
 compute = BashOperator(

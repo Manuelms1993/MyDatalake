@@ -15,7 +15,7 @@ default_args = {
 dag = DAG('0_launch_docker_batch', default_args=default_args, schedule_interval=None)
 
 # Define the command
-command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/docker/launch_docker_batch.sh && sleep 20 "
+command = "sh /home/manuel-montero/MM_DLK/MyDatalake/scripts/docker/launch_docker_batch.sh && sleep 40 "
 
 # Define the BashOperator
 task = BashOperator(
